@@ -16,10 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
 
-
+def home(request):
+    return HttpResponse("Django is working 🚀")
 urlpatterns = [
     path('admin/', admin.site.urls),
+     path('', home),
     path('api/', include('accounts.urls')),
     path('api/projects/', include('projects.urls')),
     path('api/tasks/', include('tasks.urls')),
