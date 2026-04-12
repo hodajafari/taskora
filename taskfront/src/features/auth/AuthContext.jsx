@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
 
     return true;
   } catch (err){
-    console.log("LOGIN ERROR:", err);
+    console.log("LOGIN ERROR:",  err.response?.data || err.message);
     return false;
   }
 };

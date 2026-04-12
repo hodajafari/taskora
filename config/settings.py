@@ -86,9 +86,9 @@ AUTH_USER_MODEL = 'accounts.User'
 CSRF_TRUSTED_ORIGINS = [
     "https://your-frontend-domain.com",
 ]
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SECURE_SSL_REDIRECT = False
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 TEMPLATES = [

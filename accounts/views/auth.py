@@ -5,7 +5,11 @@ from accounts.serializers import RegisterSerializer
 from rest_framework.permissions import IsAuthenticated
 from accounts.serializers import MeSerializer, UpdateMeSerializer,ChangePasswordSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from ..serializers import EmailTokenObtainPairSerializer
 
+class EmailLoginView(TokenObtainPairView):
+    serializer_class = EmailTokenObtainPairSerializer
 
 class RegisterView(APIView):
     def post(self, request):
