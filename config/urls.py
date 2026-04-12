@@ -22,7 +22,7 @@ def home(request):
     return HttpResponse("Django is working 🚀")
 urlpatterns = [
     path('admin/', admin.site.urls),
-     path('', home),
+    path('', home),
     path('api/', include('accounts.urls')),
     path('api/projects/', include('projects.urls')),
     path('api/tasks/', include('tasks.urls')),
