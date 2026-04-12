@@ -48,8 +48,7 @@ API.interceptors.response.use(
 
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
-        window.location.href = "/login";
-      }
+        window.location.replace("/login");      }
     }
 
     return Promise.reject(error);
