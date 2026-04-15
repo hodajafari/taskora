@@ -35,7 +35,7 @@ It demonstrates real-world fullstack development, including API design, authenti
 
 | Service        | URL                                    |
 | -------------- | -------------------------------------- |
-| 🌐 Frontend    | https://taskora-ir2uqv4et-hodajafaris-projects.vercel.app/|
+| 🌐 Frontend    | https://taskora-cyan.vercel.app|
 | ⚙️ Backend API | https://taskora-rzc2.onrender.com    |
 
 ---
