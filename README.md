@@ -151,35 +151,60 @@ npm run dev
 
 This project includes an automated test suite to ensure the reliability and correctness of core backend features.
 
-## 🔍 Covered Test Cases
+### 🔍 Covered Test Cases
 
-- Task creation with proper permissions  
-- Access control for non-project members  
-- Filtering tasks based on user membership  
-- Task reordering (Kanban-style ordering logic)  
-- Task activity endpoint response  
+* Task creation with proper permissions
+* Access control (prevent non-members from creating tasks)
+* Filtering tasks based on user membership
+* Task reordering (Kanban-style ordering logic)
+* Task activity endpoint response
 
----
-
-## ▶️ Run Tests
+### ▶️ Run Tests
 
 ```bash
 pytest
----
-## ⚙️ Testing Stack
-pytest
-pytest-django
-Django REST Framework (APIClient)
+```
+
+### ⚙️ Testing Stack
+
+* pytest
+* pytest-django
+* Django REST Framework (APIClient)
+
+### 📁 Example Test
+
+```python
+@pytest.mark.django_db
+def test_reorder_task(client, user, project, member):
+    client.force_authenticate(user=user)
+
+    task = Task.objects.create(
+        title="Task1",
+        project=project,
+        order=0,
+        status="todo"
+    )
+
+    response = client.post("/api/tasks/reorder/", [
+        {"id": task.id, "order": 2, "status": "done"}
+    ], format="json")
+
+    task.refresh_from_db()
+
+    assert response.status_code == 200
+    assert task.order == 2
+```
 
 ---
+
 ## 📈 Roadmap
 
 * [ ] JWT authentication
 * [ ] Docker & Docker Compose support
 * [ ] Real-time updates via WebSockets
 * [x] Automated test suite (pytest)
-* [ ] CI/CD with GitHub Actions
 * [ ] Improve test coverage & add factories (factory_boy)
+* [ ] CI/CD with GitHub Actions
 
 ---
 
