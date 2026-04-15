@@ -138,7 +138,7 @@ npm run dev
 
 ---
 
-## 🧠 Key Learnings
+## 🧠 Key Learnings 
 
 * Designed and implemented RESTful APIs using Django REST Framework
 * Integrated frontend and backend in a real deployment environment
@@ -147,13 +147,39 @@ npm run dev
 
 ---
 
+## 🧪 Testing
+
+This project includes an automated test suite to ensure the reliability and correctness of core backend features.
+
+## 🔍 Covered Test Cases
+
+- Task creation with proper permissions  
+- Access control for non-project members  
+- Filtering tasks based on user membership  
+- Task reordering (Kanban-style ordering logic)  
+- Task activity endpoint response  
+
+---
+
+## ▶️ Run Tests
+
+```bash
+pytest
+---
+## ⚙️ Testing Stack
+pytest
+pytest-django
+Django REST Framework (APIClient)
+
+---
 ## 📈 Roadmap
 
 * [ ] JWT authentication
 * [ ] Docker & Docker Compose support
 * [ ] Real-time updates via WebSockets
-* [ ] Automated test suite
+* [x] Automated test suite (pytest)
 * [ ] CI/CD with GitHub Actions
+* [ ] Improve test coverage & add factories (factory_boy)
 
 ---
 
