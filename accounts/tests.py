@@ -1,87 +1,108 @@
+import pytest
 from django.urls import reverse
-from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
 
 User = get_user_model()
+@pytest.fixture
+def client():
+    return APIClient()
 
 
-class AuthTest(APITestCase):
+# ✅ Test successful user registration
+@pytest.mark.django_db
+def test_register_success(client):
+    url = reverse('register')
 
-    def test_register_success(self):
-        url = reverse('register')
-        data = {
-            "email": "test@test.com",
-            "password": "123456"
-        }
+    data = {
+        "email": "test@test.com",
+        "password": "123456"
+    }
 
-        response = self.client.post(url, data)
+    response = client.post(url, data)
 
-       
-        self.assertEqual(response.status_code, 201)
+    # Check response status
+    assert response.status_code == 201
 
-      
-        self.assertIn('email', response.data)
-        self.assertEqual(response.data['email'], data['email'])
+    # Check response data
+    assert "email" in response.data
+    assert response.data["email"] == data["email"]
 
-       
-        self.assertTrue(
-            User.objects.filter(email=data['email']).exists()
-        )
+    # Ensure user is created in database
+    assert User.objects.filter(email=data["email"]).exists()
 
-    def test_register_invalid(self):
-        url = reverse('register')
-        data = {
-            "email": "", 
-            "password": "123"
-        }
 
-        response = self.client.post(url, data)
+# ❌ Test invalid registration (bad input)
+@pytest.mark.django_db
+def test_register_invalid(client):
+    url = reverse('register')
 
-        
-        self.assertEqual(response.status_code, 400)
-def test_login(self):
-       
-        User.objects.create_user(
-            email="test@test.com",
-            password="123456"
-        )
+    data = {
+        "email": "",
+        "password": "123"
+    }
 
-        url = reverse('login')
-        data = {
-            "email": "test@test.com",
-            "password": "123456"
-        }
+    response = client.post(url, data)
 
-        response = self.client.post(url, data)
+    # Should return validation error
+    assert response.status_code == 400
 
-      
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)   
-def test_protected_view(self):
-   
+
+# 🔐 Test login and JWT token generation
+@pytest.mark.django_db
+def test_login(client):
+    # Create user
     User.objects.create_user(
         email="test@test.com",
         password="123456"
     )
 
-    login_url = reverse('login')
-    login_data = {
+    url = reverse('login')
+
+    data = {
         "email": "test@test.com",
         "password": "123456"
     }
-    login_response = self.client.post(login_url, login_data)
 
-    access_token = login_response.data['access']
+    response = client.post(url, data)
 
-    
-    url = reverse('test')
-    self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access_token}')
-    response = self.client.get(url)
+    # Check login success
+    assert response.status_code == 200
 
-    self.assertEqual(response.status_code, 200)  
-def test_protected_view_unauthorized(self):
-    url = reverse('test')
-    response = self.client.get(url)
+    # Check JWT tokens exist
+    assert "access" in response.data
+    assert "refresh" in response.data
 
-    self.assertEqual(response.status_code, 401)               
+
+# 🔒 Test accessing protected endpoint with valid token
+@pytest.mark.django_db
+def test_protected_view(client):
+    # Create user
+    User.objects.create_user(
+        email="test@test.com",
+        password="123456"
+    )
+
+    # Login to get token
+    login_response = client.post(reverse('login'), {
+        "email": "test@test.com",
+        "password": "123456"
+    })
+
+    access_token = login_response.data["access"]
+
+    # Send authenticated request
+    client.credentials(HTTP_AUTHORIZATION=f'Bearer {access_token}')
+    response = client.get(reverse('test'))
+
+    # Should be authorized
+    assert response.status_code == 200
+
+
+# ❌ Test accessing protected endpoint without authentication
+@pytest.mark.django_db
+def test_protected_view_unauthorized(client):
+    response = client.get(reverse('test'))
+
+    # Should be unauthorized
+    assert response.status_code == 403

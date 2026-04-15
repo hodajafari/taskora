@@ -17,6 +17,8 @@ from .utils import log_task_activity
 from projects.permissions import IsProjectMember,IsProjectMemberObject
 
 
+
+
 class TaskViewSet(ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
@@ -82,7 +84,7 @@ class TaskViewSet(ModelViewSet):
         old_instance = self.get_object()
 
         # 🔥 تغییر مهم: assigned_to به جای assigned_to_id
-        tracked_fields = ['title', 'status', 'assigned_to', 'position']
+        tracked_fields = ['title', 'status', 'assigned_to', 'position', 'order']
 
         # 🧠 گرفتن مقدار قبلی
         old_data = {f: getattr(old_instance, f) for f in tracked_fields}
@@ -149,51 +151,49 @@ class TaskViewSet(ModelViewSet):
     # ================= REORDER =================
     @action(detail=False, methods=["post"])
     def reorder(self, request):
-            """
-            [{id: 1, order: 0, status: 'todo'}]
-            """
+        """
+        [{id: 1, order: 0, status: 'todo'}]
+        """
 
-            for item in request.data:
-                task = Task.objects.get(id=item["id"])
+        for item in request.data:
+            task = Task.objects.get(id=item["id"])
 
-                old_status = task.status
-                old_order = task.order
+            old_status = task.status
+            old_order = task.order
 
-                # آپدیت
-                task.order = item["order"]
-                task.status = item["status"]
-                task.save()
+            # ✅ safe update (خیلی مهم)
+            task.order = item.get("order", task.order)
+            task.status = item.get("status", task.status)
+            task.save()
 
-                changes = {}
+            changes = {}
 
-                # 🔥 اگر status تغییر کرد
-                if old_status != task.status:
-                    changes["status"] = {
-                        "from": old_status,
-                        "to": task.status
-                    }
+            if old_status != task.status:
+                changes["status"] = {
+                    "from": old_status,
+                    "to": task.status
+                }
 
-                # 🔥 اگر order تغییر کرد
-                if old_order != task.order:
-                    changes["order"] = {
-                        "from": old_order,
-                        "to": task.order
-                    }
+            if old_order != task.order:
+                changes["order"] = {
+                    "from": old_order,
+                    "to": task.order
+                }
 
-                # 🔥 اگر تغییری بود → لاگ کن
-                if changes:
-                    log_task_activity(
-                        task=task,
-                        user=request.user,
-                        action="reordered" if "order" in changes else "status_changed",
-                        changes=changes
-                    )
+            if changes:
+                log_task_activity(
+                    task=task,
+                    user=request.user,
+                    action="reordered" if "order" in changes else "status_changed",
+                    changes=changes
+                )
 
-                return Response({"status": "ok"})
+        # ✅ باید بیرون حلقه باشه
+        return Response({"status": "ok"})
 
     # ================= ACTIVITY =================
     @action(detail=True, methods=['get'])
-    def activity(self, request, pk=None):
+    def activities(self, request, pk=None):
         task = self.get_object()
         self.check_object_permissions(request, task)
         activities = TaskActivity.objects.filter(
