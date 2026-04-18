@@ -5,6 +5,7 @@ import {
   deleteTask,
   updateTask,
   updateTaskStatus,
+  generateAITasks,
 } from "../api/taskApi";
 import toast from "react-hot-toast";
 
@@ -171,6 +172,49 @@ export const useTaskActivity = (taskId) => {
     queryFn: async () => {
       const res = await API.get(`tasks/${taskId}/activity/`);
       return res.data;
+    },
+  });
+};
+export const useGenerateAITasks = (projectId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: generateAITasks,
+
+    // 🔥 optimistic
+    onMutate: async ({ text }) => {
+      await queryClient.cancelQueries(["tasks", projectId]);
+
+      const previousTasks = queryClient.getQueryData(["tasks", projectId]);
+
+      // 👇 یه placeholder بساز
+      const optimisticTask = {
+        id: Date.now(),
+        title: "Generating AI tasks...",
+        status: "todo",
+        isAI: true,
+      };
+
+      queryClient.setQueryData(["tasks", projectId], (old = []) => [
+        ...old,
+        optimisticTask,
+      ]);
+
+      return { previousTasks };
+    },
+
+    // ❌ rollback
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(
+        ["tasks", projectId],
+        context.previousTasks
+      );
+      toast.error("AI failed 😢");
+    },
+
+    // ✅ sync
+    onSettled: () => {
+      queryClient.invalidateQueries(["tasks", projectId]);
     },
   });
 };

@@ -23,6 +23,10 @@ import {
   useReorderTasks,
 } from "../features/tasks/hooks/useTasks";
 
+import AITaskGenerator from "../features/tasks/AITaskGenerator";
+import { useGenerateAITasks } from "../features/tasks/hooks/useTasks";
+import { suggestAITasks } from "../features/tasks/api/tasksApi";
+
 const MemoComment = memo(CommentSection);
 
 export default function ProjectPage() {
@@ -34,6 +38,7 @@ export default function ProjectPage() {
   const [title, setTitle] = useState("");
   const [assigned, setAssigned] = useState("");
   const [activeTask, setActiveTask] = useState(null);
+  
   // ===== PROJECKT =====
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ["project", id],
@@ -59,6 +64,7 @@ export default function ProjectPage() {
   const deleteMutation = useDeleteTask(id);
   const editMutation = useUpdateTask(id);
   const reorderMutation = useReorderTasks(id);
+  const aiMutation = useGenerateAITasks(id);
 
   const updateTask = (taskId, title) => {
     editMutation.mutate({ taskId, title });
@@ -71,6 +77,31 @@ export default function ProjectPage() {
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   if (isLoading) return <p className="p-6">Loading...</p>;
+
+  const handleGenerateAI = (text) => {
+  aiMutation.mutate({
+    text,
+    projectId: Number(id),
+  });
+};
+const [aiSuggestions, setAiSuggestions] = useState([]);
+useEffect(() => {
+  if (!title.trim()) {
+    setAiSuggestions([]);
+    return;
+  }
+
+  const delay = setTimeout(async () => {
+    try {
+      const res = await suggestAITasks({ text: title });
+      setAiSuggestions(res.data.subtasks || []);
+    } catch (err) {
+      console.log(err);
+    }
+  }, 500);
+
+  return () => clearTimeout(delay);
+}, [title]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] text-white p-6">
@@ -88,9 +119,15 @@ export default function ProjectPage() {
             )}
           </div>
       </div>
+      {/* ===== AI GENERATOR ===== */}
+      <AITaskGenerator
+        onGenerate={handleGenerateAI}
+        loading={aiMutation.isLoading}
+      />
       
       {/* ===== CREATE ===== */}
-      <div className="flex gap-3 mb-8 bg-white/10 p-4 rounded-2xl border border-white/10">
+    <div className="flex gap-3 mb-8 bg-white/10 p-4 rounded-2xl border border-white/10">
+      <div className="flex gap-3">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -131,7 +168,33 @@ export default function ProjectPage() {
           Add
         </button>
       </div>
-      
+      {/* 🔥 AI SUGGESTIONS */}
+      {aiSuggestions.length > 0 && (
+        <div className="mt-3 bg-black/40 p-3 rounded-xl">
+          <p className="text-sm text-gray-400 mb-2">AI Suggestions:</p>
+
+          {aiSuggestions.map((s, i) => (
+            <div
+              key={i}
+              onClick={() => {
+                createMutation.mutate({
+                  title: s,
+                  project: Number(id),
+                  status: "todo",
+                  order: 0,
+                });
+                setTitle("");          
+                setAiSuggestions([]);  
+              }}
+              className="cursor-pointer hover:bg-white/10 p-2 rounded"
+            >
+              {s}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
       {/* ===== BOARD ===== */}
       <DndContext
         collisionDetection={closestCorners }

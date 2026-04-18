@@ -21,3 +21,9 @@ export const updateTask = ({ taskId, title }) => {
 export const updateTaskStatus = ({ taskId, status }) => {
   return API.patch(`tasks/${taskId}/`, { status });
 };
+export const generateAITasks = (data) => {
+  return API.post("tasks/ai_subtasks/", data);
+};
+export const suggestAITasks = (data) => {
+  return API.post("tasks/ai_suggest/", data);
+};

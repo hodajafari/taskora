@@ -1,11 +1,12 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.decorators import action
+from rest_framework.decorators import action,api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 
 from projects.models import Membership
+from tasks.ai import generate_subtasks
 from .models import Task, TaskActivity
 from .serializers import TaskSerializer, TaskActivitySerializer
 from .permissions import (
@@ -15,6 +16,8 @@ from .permissions import (
 )
 from .utils import log_task_activity
 from projects.permissions import IsProjectMember,IsProjectMemberObject
+
+
 
 
 
@@ -203,7 +206,37 @@ class TaskViewSet(ModelViewSet):
         serializer = TaskActivitySerializer(activities, many=True)
 
         return Response(serializer.data)
+    
+    # ================= AI SUBTASKS =================
+    from .models import Task
 
+    @action(detail=False, methods=['post'])
+    def ai_subtasks(self, request):
+        text = request.data.get("text")
+        project_id = request.data.get("project")
+
+        result = generate_subtasks(text)
+
+        created_tasks = []
+
+        for sub in result["subtasks"]:
+            task = Task.objects.create(
+                title=sub,
+                project_id=project_id,
+                assigned_to=request.user
+            )
+            created_tasks.append(task.title)
+
+        return Response({
+            "created": created_tasks
+        })
+    @action(detail=False, methods=['post'])
+    def ai_suggest(self, request):
+        text = request.data.get("text")
+
+        result = generate_subtasks(text)
+
+        return Response(result)
     # ================= FIX ORDER =================
     def reorder_tasks(self, task):
         tasks = Task.objects.filter(
