@@ -170,7 +170,7 @@ export const useTaskActivity = (taskId) => {
   return useQuery({
     queryKey: ["activity", taskId],
     queryFn: async () => {
-      const res = await API.get(`tasks/${taskId}/activity/`);
+      const res = await API.get(`tasks/${taskId}/activities/`);
       return res.data;
     },
   });
