@@ -25,7 +25,7 @@ import {
 
 import AITaskGenerator from "../features/tasks/AITaskGenerator";
 import { useGenerateAITasks } from "../features/tasks/hooks/useTasks";
-import { suggestAITasks } from "../features/tasks/api/tasksApi";
+import { suggestAITasks } from "../features/tasks/api/taskApi";
 
 const MemoComment = memo(CommentSection);
 
