@@ -48,6 +48,9 @@ It demonstrates real-world fullstack development, including API design, authenti
 * 💬 **Activity & Commenting System**
 * 🔎 **Advanced Filtering** — by project, status, and assignee
 * 🌍 **Fully Deployed** on Render + Vercel
+*  🤖 **AI Task Suggestions** | Real-time task suggestions powered by Claude AI with debounce |
+*  ⚡ **Bulk AI Generator** | Generate multiple tasks at once using AI |
+   
 
 ---
 
@@ -144,6 +147,7 @@ npm run dev
 * Integrated frontend and backend in a real deployment environment
 * Implemented role-based permissions and filtering logic
 * Migrated from SQLite to PostgreSQL for production-ready persistence
+* Integrated **Anthropic Claude API** for real-time AI suggestions with debounce optimization
 
 ---
 
@@ -170,6 +174,10 @@ pytest
 * pytest
 * pytest-django
 * Django REST Framework (APIClient)
+
+### AI Integration
+- **Anthropic Claude API** — Task suggestion and bulk generation
+- **Debounced live input** — Suggestions appear as you type (no extra requests)
 
 ### 📁 Example Test
 
@@ -205,6 +213,9 @@ def test_reorder_task(client, user, project, member):
 * [x] Automated test suite (pytest)
 * [ ] Improve test coverage & add factories (factory_boy)
 * [ ] CI/CD with GitHub Actions
+* [x] **AI Task Suggestions** — Live suggestions with debounce as user types
+* [x] **Bulk AI Generator** — Generate multiple tasks from a single prompt 
+
 
 ---
 
