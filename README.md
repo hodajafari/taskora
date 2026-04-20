@@ -176,7 +176,7 @@ pytest
 * Django REST Framework (APIClient)
 
 ### AI Integration
-- **Anthropic Claude API** — Task suggestion and bulk generation
+- **OpenAI API** — Task suggestion and bulk generation
 - **Debounced live input** — Suggestions appear as you type (no extra requests)
 
 ### 📁 Example Test
