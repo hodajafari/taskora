@@ -49,7 +49,7 @@ export default function CommentSection({ enableEnterToSend = true }) {
     setReplyingTo(null);
   };
 
-  // ✅ edit (هم برای کامنت هم ریپلای)
+  // ✅ edit 
   const startEdit = (c) => {
     setEditingId(c.id);
     setEditText(c.text);
@@ -68,7 +68,7 @@ export default function CommentSection({ enableEnterToSend = true }) {
     setEditText("");
   };
 
-  // ✅ delete (کامنت + ریپلای‌هاش)
+  // ✅ delete 
   const deleteComment = (id) => {
     setComments((prev) =>
       prev.filter((c) => c.id !== id && c.parent !== id)
@@ -79,7 +79,7 @@ export default function CommentSection({ enableEnterToSend = true }) {
 
   return (
     <div className="mt-3">
-      {/* input اصلی */}
+      {/* input */}
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}

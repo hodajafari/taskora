@@ -1,7 +1,7 @@
 import { useTaskActivity } from "../features/tasks/hooks/useTasks";
 import { formatDistanceToNow } from "date-fns";
 
-// 🎯 تبدیل لاگ به متن قابل فهم
+
 const renderChange = (log) => {
   if (!log) return null;
 
@@ -55,7 +55,7 @@ const renderChange = (log) => {
     return "reordered the task";
   }
 
-  // 🔥 fallback برای updated (مهم)
+
   if (action === "updated") {
     return "updated the task";
   }

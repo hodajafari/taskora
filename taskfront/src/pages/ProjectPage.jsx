@@ -10,7 +10,7 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { Trash2, Pencil,GripVertical, Activity, MessageCircle   } from "lucide-react";
+import { Trash2, Pencil,GripVertical, Activity, MessageCircle,Check , X   } from "lucide-react";
 
 import CommentSection from "../components/CommentSection";
 import ActivityTimeline from "../components/ActivityTimeline";
@@ -76,25 +76,36 @@ export default function ProjectPage() {
       .filter((t) => t.status === status)
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-  if (isLoading) return <p className="p-6">Loading...</p>;
-
-  const handleGenerateAI = (text) => {
-  aiMutation.mutate({
-    text,
-    projectId: Number(id),
-  });
-};
+  
+  
 const [aiSuggestions, setAiSuggestions] = useState([]);
+const [showAll, setShowAll] = useState(false);
+const getUserByRole = (role) => {
+  return users.find((u) => u.role === role)?.id || null;
+};
+
 useEffect(() => {
   if (!title.trim()) {
     setAiSuggestions([]);
+    setShowAll(false);
     return;
   }
-
+  
   const delay = setTimeout(async () => {
     try {
       const res = await suggestAITasks({ text: title });
-      setAiSuggestions(res.data.subtasks || []);
+      console.log(res.data.subtasks);
+      setAiSuggestions(
+  (res.data.subtasks || [])
+    .filter((t) => !t.title.toLowerCase().startsWith("analyze"))
+    .map((t, idx) => ({
+      title: t.title,
+       id: idx + "_" + t.title,
+      checked: false,
+      assignedTo: getUserByRole(t.assign),
+    }))
+);
+
     } catch (err) {
       console.log(err);
     }
@@ -102,6 +113,51 @@ useEffect(() => {
 
   return () => clearTimeout(delay);
 }, [title]);
+
+const handleAddSelected = () => {
+  const selected = aiSuggestions.filter((t) => t.checked);
+
+  selected.forEach((task) => {
+    createMutation.mutate({
+      title: task.title,
+      project: Number(id),
+      assigned_to: task.assignedTo || null,
+      status: "todo",
+      order: 0,
+    });
+  });
+
+  setAiSuggestions([]); 
+};
+
+const handleGenerateAI = async (text) => {
+  try {
+    const res = await suggestAITasks({
+      text,
+    });
+    console.log("AI subtasks:", res.data.subtasks); 
+    setAiSuggestions(
+  (res.data.subtasks || [])
+    .filter((t) => !t.title.toLowerCase().startsWith("analyze")) 
+    .map((t, idx) => ({
+      title: t.title,
+      id: idx + "_" + t.title,
+      checked: false,
+      assignedTo: getUserByRole(t.assign),
+    }))
+);
+  setShowAll(false);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+if (isLoading) return <p className="p-6">Loading...</p>;
+
+
+const visibleSuggestions = showAll
+  ? aiSuggestions
+  : aiSuggestions.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] text-white p-6">
@@ -111,6 +167,9 @@ useEffect(() => {
             <h1 className="text-3xl font-bold tracking-tight">
               {project?.name}
             </h1>
+            <p className="text-gray-400 mt-1">
+              Manage your tasks with AI assistance 
+            </p>
 
             {project?.description && (
               <p className="text-gray-400 text-sm mt-1">
@@ -168,32 +227,101 @@ useEffect(() => {
           Add
         </button>
       </div>
-      {/* 🔥 AI SUGGESTIONS */}
-      {aiSuggestions.length > 0 && (
-        <div className="mt-3 bg-black/40 p-3 rounded-xl">
-          <p className="text-sm text-gray-400 mb-2">AI Suggestions:</p>
+      {/* 🔥 AI SUGGESTIONS */}   
+{aiSuggestions.length > 0 && (
+  <div className="relative mt-4 bg-black/40 p-4 rounded-2xl border border-white/10 backdrop-blur">
+    <button
+      onClick={() => setAiSuggestions([])}
+      className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
+    >
+      <X size={18} />
+    </button>
+    <p className="text-sm text-gray-400 mb-3 flex items-center gap-2">
+      ✨ AI Suggestions
+    </p>
 
-          {aiSuggestions.map((s, i) => (
-            <div
-              key={i}
-              onClick={() => {
-                createMutation.mutate({
-                  title: s,
-                  project: Number(id),
-                  status: "todo",
-                  order: 0,
-                });
-                setTitle("");          
-                setAiSuggestions([]);  
-              }}
-              className="cursor-pointer hover:bg-white/10 p-2 rounded"
-            >
-              {s}
-            </div>
-          ))}
+    {visibleSuggestions.map((item) => (
+      <div
+        key={item.id}
+        onClick={() => {
+          const updated =  aiSuggestions.map((t) =>
+           t.id === item.id
+          ? { ...t, checked: !t.checked }
+          : t
+          );
+          setAiSuggestions(updated);
+        }}
+        className={`
+          flex items-center justify-between gap-3 p-3 rounded-xl cursor-pointer transition-all
+          ${item.checked 
+            ? "bg-purple-500/20 border border-gray-500/40" 
+            : "hover:bg-white/10 border border-transparent"}
+        `}
+      >
+        {/* LEFT */}
+        <div className="flex items-center gap-3 flex-1">
+
+          {/* CHECK ICON */}
+          <div className={`
+            w-5 h-5 flex items-center justify-center rounded-md border transition
+            ${item.checked 
+              ? "bg-blue-500 border-blue-500" 
+              : "border-white/20"}
+          `}>
+            {item.checked && <Check size={14} />}
+          </div>
+
+          {/* TITLE */}
+          <span className={`
+            transition
+            ${item.checked ? "line-through opacity-50" : ""}
+          `}>
+            {item.title}
+          </span>
         </div>
+
+        {/* ASSIGN */}
+        <select
+          value={item.assignedTo || ""}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            const updated = aiSuggestions.map((t) =>
+            t.id === item.id
+              ? { ...t, assignedTo: Number(e.target.value) }
+              : t
+          );
+            setAiSuggestions(updated);
+          }}
+          className="bg-[#1e293b] text-white border border-white/20 p-3 rounded-xl"
+        >
+          <option value="">Assign</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.email}
+            </option>
+          ))}
+        </select>
+      </div>
+    ))}
+    {aiSuggestions.length > 3 && (
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="mt-3 text-sm text-blue-400 hover:text-blue-300 transition"
+        >
+          {showAll ? "Show less" : "Show more"}
+        </button>
       )}
-    </div>
+    <button
+      onClick={handleAddSelected}
+      className="mt-4 w-full bg-blue-600 hover:bg-blue-500 py-2 rounded-xl transition shadow-lg shadow-blue-500/20"
+    >
+      Add Selected
+    </button>
+
+  </div>
+  
+)}      
+</div>
 
       {/* ===== BOARD ===== */}
       <DndContext
@@ -347,7 +475,7 @@ useEffect(() => {
 const Column = memo(({ id, title, tasks, deleteTask, updateTask, onSelect , setPanelType}) => {
   const { setNodeRef } = useDroppable({
     id,
-    data: { type: "column" }, // 🔥 مهم
+    data: { type: "column" }, 
   });
 
 
@@ -425,7 +553,7 @@ const Task = memo(({ task, deleteTask, updateTask, onSelect, setPanelType }) => 
             onClick={(e) => {
               e.stopPropagation();
               onSelect(task);
-              setPanelType("activity"); // باز کردن پنل
+              setPanelType("activity");
             }}
           >
             <Activity size={14} />

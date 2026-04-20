@@ -213,7 +213,7 @@ class TaskViewSet(ModelViewSet):
     @action(detail=False, methods=['post'])
     def ai_subtasks(self, request):
         text = request.data.get("text")
-        project_id = request.data.get("project")
+        project_id = request.data.get("projectId")
 
         result = generate_subtasks(text)
 
