@@ -122,10 +122,14 @@ AUTH_PASSWORD_VALIDATORS = [
 # ==============================================================================
 # CORS
 # ==============================================================================
-
+def get_list_env(name):
+    value = config(name, default='')
+    return [v.strip() for v in value.split(',') if v.strip()]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
-CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='').split(',')
+CORS_ALLOWED_ORIGINS = get_list_env('CORS_ALLOWED_ORIGINS')or [
+    "http://localhost:3000",
+]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'authorization',
@@ -141,7 +145,9 @@ CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='').split(',')
 
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
 CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+SECURE_SSL_REDIRECT = get_list_env('CSRF_TRUSTED_ORIGINS')or [
+    "http://localhost:3000",
+]
 
 
 # ==============================================================================
