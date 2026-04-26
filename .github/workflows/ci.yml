@@ -21,10 +21,10 @@ jobs:
 
       - name: Run Django tests
         run: python manage.py test
-      - name: Run Django tests
+      - name: Debug env
+        run: echo $SECRET_KEY
         env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-        run: python manage.py test      
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}  
 
   frontend-build:
     runs-on: ubuntu-latest
