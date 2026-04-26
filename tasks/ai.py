@@ -1,12 +1,16 @@
 import json
 import re
 import os
-from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+api_key = os.getenv("OPENAI_API_KEY")
+if api_key:
+    from openai import OpenAI
+    client = OpenAI(api_key=api_key)
+else:
+    client = None
 
 
 
@@ -65,6 +69,8 @@ def smart_fallback(task_text):
 
 # 🔥 main function
 def generate_subtasks(task_text):
+    if client is None:
+        return {"subtasks": smart_fallback(task_text)}
     try:
         prompt = f"""
 You are a senior project manager.
