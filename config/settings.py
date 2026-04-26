@@ -124,7 +124,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # ==============================================================================
 def get_list_env(name):
     value = config(name, default='')
-    return [v.strip() for v in value.split(',') if v.strip()]
+    if not value:
+        return []
+    return [v.strip() for v in value.split(',') if v.strip().startswith('http')]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
 CORS_ALLOWED_ORIGINS = get_list_env('CORS_ALLOWED_ORIGINS')or [
