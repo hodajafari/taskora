@@ -1,0 +1,48 @@
+name: Taskora CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          cd Taskora
+          pip install -r requirements.txt
+
+      - name: Run Django tests
+        run: |
+          cd Taskora
+          pytest
+
+  frontend-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install frontend deps
+        run: |
+          cd Taskora/taskfront
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd Taskora/taskfront
+          npm run build
