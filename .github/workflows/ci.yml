@@ -42,3 +42,7 @@ jobs:
         run: |
           cd taskfront
           npm run build
+      - name: Run Django tests
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        run: python manage.py test    
