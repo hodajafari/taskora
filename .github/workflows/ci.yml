@@ -55,4 +55,4 @@ jobs:
             uses: vercel/repository-dispatch/actions/status@v1
             with:
               github_token: ${{ secrets.GITHUB_TOKEN }}
-              name: taskora-ci
+              name: Vercel - taskora: taskora-ci
