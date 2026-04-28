@@ -25,9 +25,9 @@
 
 **Taskora** is a production-ready fullstack task management application built with **Django REST Framework** and **React/Vite**.
 
-It follows a clean, decoupled API-driven architecture where the frontend communicates with the backend entirely through REST APIs.
+It features a clean, decoupled API-driven architecture, where the frontend communicates with the backend via REST APIs.
 
-It demonstrates real-world fullstack development, including API design, authentication, and production deployment.
+The project showcases real-world fullstack development, including authentication, role-based access control, automated testing, and CI/CD-driven production deployment.
 
 ---
 
@@ -48,8 +48,11 @@ It demonstrates real-world fullstack development, including API design, authenti
 * 💬 **Activity & Commenting System**
 * 🔎 **Advanced Filtering** — by project, status, and assignee
 * 🌍 **Fully Deployed** on Render + Vercel
-*  🤖 **AI Task Suggestions** | Real-time task suggestions powered by Claude AI with debounce |
-*  ⚡ **Bulk AI Generator** | Generate multiple tasks at once using AI |
+* 🤖 **AI Task Suggestions** | Real-time task suggestions powered by Claude AI with debounce |
+* ⚡ **Bulk AI Generator** | Generate multiple tasks at once using AI |
+* ⚙️ **CI/CD Pipeline** — Automated testing, build validation, and conditional deployment  
+* 🩺 **Health Monitoring System** — Endpoint-based service validation after deployment  
+* 🔁 **Fail-safe Deployment Strategy** — Backup service with rollback support for reliability  
    
 
 ---
@@ -58,13 +61,23 @@ It demonstrates real-world fullstack development, including API design, authenti
 
 ```
 ┌─────────────────────┐        REST API        ┌───────────────────────┐
-│   React / Vite      │ ─────────────────────▶ │ Django REST Framework  │
-│   (Vercel)          │ ◀───────────────────── │ (Render)               │
+│   React / Vite      │ ─────────────────────▶ │ Django REST Framework │
+│   (Vercel)          │ ◀───────────────────── │ (Render)              │
 └─────────────────────┘       JSON Responses   └──────────┬────────────┘
                                                           │
                                                  ┌────────▼────────┐
                                                  │  PostgreSQL DB   │
                                                  └─────────────────┘
+
+        ▲
+        │
+        │   CI/CD Pipeline (GitHub Actions)
+        │   - Tests (pytest)
+        │   - Build (React)
+        │   - Deploy (Render + Vercel)
+        │   - Health Check & Rollback
+        │
+        └───────────────────────────────────────────────
 ```
 
 ---
@@ -148,6 +161,9 @@ npm run dev
 * Implemented role-based permissions and filtering logic
 * Migrated from SQLite to PostgreSQL for production-ready persistence
 * Integrated **Anthropic Claude API** for real-time AI suggestions with debounce optimization
+* Built a CI/CD pipeline with automated testing, build validation, and conditional deployment  
+* Implemented post-deployment health checks to ensure application availability  
+* Designed a basic rollback strategy using a stable backup service on Render  
 
 ---
 
@@ -202,7 +218,17 @@ def test_reorder_task(client, user, project, member):
     assert response.status_code == 200
     assert task.order == 2
 ```
+---
 
+##⚙️ CI/CD
+
+This project implements a robust CI/CD pipeline to ensure reliability, code quality, and safe production deployments.
+
+Automated backend testing with pytest and frontend build validation
+Strict deployment conditions — deployment is triggered only if all checks pass
+Integrated deployment workflow for both backend (Render) and frontend (Vercel)
+Post-deployment health check (/health/) to verify application availability
+Fail-safe mechanism with a stable backup service enabling basic rollback in case of failure
 ---
 
 ## 📈 Roadmap
