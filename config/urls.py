@@ -17,9 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
+from django.http import JsonResponse
+from django.db import connection
 
 def home(request):
     return HttpResponse("Django is working 🚀")
+
+def health(request):
+    try:
+        connection.ensure_connection()
+        return JsonResponse({"status": "ok"})
+    except:
+        return JsonResponse({"status": "error"}, status=500)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home),
@@ -27,4 +36,5 @@ urlpatterns = [
     path('api/projects/', include('projects.urls')),
     path('api/tasks/', include('tasks.urls')),
     path('api/comments/', include('comments.urls')),
+    path("health/", health),
 ]

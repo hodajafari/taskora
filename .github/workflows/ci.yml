@@ -50,39 +50,75 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
       - name: Build
         run: npm run build
 
   deploy:
-   name: Deploy (Backend + Frontend)
-   needs: [backend, frontend]
-   runs-on: ubuntu-latest
+    name: Deploy (Backend + Frontend + Health + Rollback)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
 
-   steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    # ✅ Backend Deploy
-    - name: Deploy Backend (Render)
-      run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+      # 🚀 Backend Deploy
+      - name: Deploy Backend (Render)
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
 
-    # ✅ Frontend 
-    - name: Setup Node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 20
+      # ⏳wait for backend to be up
+      - name: Wait for backend
+        continue-on-error: true
+        run:  |
+          for i in {1..5}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://taskora-rzc2.onrender.com/health/)
+            if [ $STATUS -eq 200 ]; then
+              echo "Backend is ready!"
+              exit 0
+            fi
+            echo "Waiting..."
+            sleep 10
+          done
+          
+          echo "Backend did not become ready"
+          exit 1
 
-    - name: Install dependencies
-      run: |
-        cd taskfront
-        npm ci
+      # ❤️ Health Check
+      - name: Health Check
+        id: healthcheck
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://taskora-rzc2.onrender.com/health/)
+          echo "Status: $STATUS"
+          if [ $STATUS -ne 200 ]; then
+            echo "Backend is unhealthy!"
+            exit 1
+          fi
 
-    # ✅ Vercel
-    - name: Install Vercel CLI
-      run: npm install -g vercel
+      # 🚀 Frontend Setup
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
-    # ✅ Deploy
-    - name: Deploy Frontend (Vercel)
-      run: |
-        cd taskfront
-        vercel --prod --confirm --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Install dependencies
+        run: |
+          cd taskfront
+          npm ci
+
+      # ⚡ Vercel
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      # 🌐 Deploy Frontend
+      - name: Deploy Frontend (Vercel)
+        run: |
+          cd taskfront
+          vercel --prod --confirm --token=${{ secrets.VERCEL_TOKEN }}
+
+      # 🚑  if fail Rollback
+      - name: Rollback Backend
+        if: steps.healthcheck.outcome == 'failure'
+        run: |
+          echo "🚨 Rolling back backend..."
+          curl -X POST ${{ secrets.RENDER_ROLLBACK_HOOK }}
