@@ -50,9 +50,10 @@ The project showcases real-world fullstack development, including authentication
 * 🌍 **Fully Deployed** on Render + Vercel
 * 🤖 **AI Task Suggestions** | Real-time task suggestions powered by Claude AI with debounce |
 * ⚡ **Bulk AI Generator** | Generate multiple tasks at once using AI |
-* ⚙️ **CI/CD Pipeline** — Automated testing, build validation, and conditional deployment  
+* ⚙️ **CI/CD Pipeline** — Automated testing, Docker image build, and conditional deployment  
+* 🐳 **Containerized Deployment** — Backend is built, tested, and deployed using Docker images  
 * 🩺 **Health Monitoring System** — Endpoint-based service validation after deployment  
-* 🔁 **Fail-safe Deployment Strategy** — Backup service with rollback support for reliability  
+* 🔁 **Fail-safe Deployment Strategy** — Rollback mechanism using stable deployments for reliability  
    
 
 ---
@@ -71,11 +72,13 @@ The project showcases real-world fullstack development, including authentication
 
         ▲
         │
-        │   CI/CD Pipeline (GitHub Actions)
+        │   - CI/CD Pipeline (GitHub Actions)
         │   - Tests (pytest)
-        │   - Build (React)
+        │   - Docker Build & Container Test
+        │   - Push Image (Docker Hub)
         │   - Deploy (Render + Vercel)
         │   - Health Check & Rollback
+        │
         │
         └───────────────────────────────────────────────
 ```
