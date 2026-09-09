@@ -28,7 +28,37 @@ jobs:
 
       - name: Run tests (pytest)
         run: pytest
+      - name: Build Docker Image
+        run: docker build -t taskora-backend:${{ github.sha }} .
+      - name: Remove old container
+        run: docker rm -f taskora || true
+      
+      - name: Run Container Test
+        run: docker run -d -p 8000:8000 --name taskora taskora-backend:${{ github.sha }}
+      - name: Wait for app
+        run: |
+          for i in {1..10}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health/)
+            if [ $STATUS -eq 200 ]; then
+              echo "App is healthy!"
+              exit 0
+            fi
+            echo "Waiting..."
+            sleep 3
+          done
+          echo "App did not become healthy"
+          exit 1
+      - name: Login to Docker Hub
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
+      - name: Tag Image
+        run: docker tag taskora-backend:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/taskora-backend:${{ github.sha }}
+
+      - name: Push Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/taskora-backend:${{ github.sha }}
+      - name: Cleanup container
+        if: always()
+        run: docker rm -f taskora || true
   frontend:
     name: Frontend (React Build)
     runs-on: ubuntu-latest
@@ -53,6 +83,7 @@ jobs:
 
       - name: Build
         run: npm run build
+    
 
   deploy:
     name: Deploy (Backend + Frontend + Health + Rollback)
@@ -69,7 +100,6 @@ jobs:
 
       # ⏳wait for backend to be up
       - name: Wait for backend
-        continue-on-error: true
         run:  |
           for i in {1..10}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://taskora-rzc2.onrender.com/health/)
