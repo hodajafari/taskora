@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: taskora
+      POSTGRES_USER: taskora
+      POSTGRES_PASSWORD: taskora
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskora -d taskora"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    ports:
+      - "8001:8000"
+    environment:
+      SECRET_KEY: docker-local-secret-key
+      DEBUG: "True"
+      ALLOWED_HOSTS: "*"
+      DATABASE_URL: postgresql://taskora:taskora@db:5432/taskora
+      DB_SSL_REQUIRE: "False"
+      SESSION_COOKIE_SECURE: "False"
+      CSRF_COOKIE_SECURE: "False"
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/app/entrypoint.sh"]   
+
+volumes:
+  postgres_data:
