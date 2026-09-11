@@ -8,7 +8,7 @@ const BASE_URL =
 const API = axios.create({
   baseURL: BASE_URL,
 });
-// 🔹 request interceptor
+
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("access");
 
@@ -19,22 +19,34 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-// 🔥 response interceptor 
 API.interceptors.response.use(
   (res) => res,
+
   async (error) => {
     const originalRequest = error.config;
+
+    // اگر خود refresh/ خطا داده، دوباره refresh نکن
+    if (originalRequest?.url?.includes("refresh/")) {
+      return Promise.reject(error);
+    }
 
     if (
       (error.response?.status === 401 ||
         error.response?.data?.code === "token_not_valid") &&
-      !originalRequest._retry
+      !originalRequest?._retry
     ) {
       originalRequest._retry = true;
 
-      try {
-        const refresh = localStorage.getItem("refresh");
+      const refresh = localStorage.getItem("refresh");
 
+      // اگر refresh token نداریم، refresh request نفرست
+      if (!refresh) {
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        return Promise.reject(error);
+      }
+
+      try {
         const res = await API.post("refresh/", { refresh });
 
         const newAccess = res.data.access;
@@ -42,13 +54,18 @@ API.interceptors.response.use(
         localStorage.setItem("access", newAccess);
 
         originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+
         return API(originalRequest);
       } catch (err) {
         console.log("Refresh failed", err);
 
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
-        window.location.replace("/login");      }
+
+        window.location.replace("/login");
+
+        return Promise.reject(err);
+      }
     }
 
     return Promise.reject(error);
