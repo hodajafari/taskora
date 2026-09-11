@@ -13,6 +13,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/features/actions)
 [![Render](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render&logoColor=white)](https://render.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-React-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vercel](https://img.shields.io/badge/Frontend-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com)
 
 <br />
@@ -27,7 +28,7 @@
 
 ## 📌 Overview
 
-**Taskora** is a fullstack task management platform built with **Django REST Framework** and **React/Vite**.
+**Taskora** is a fullstack task management platform built with **Django REST Framework** and **React/Vite**, with TypeScript used across selected frontend components, API services, and hooks.
 
 The application follows a decoupled, API-driven architecture where the React frontend communicates with the Django backend through REST APIs.
 
@@ -122,6 +123,7 @@ The project demonstrates real-world fullstack development, including authenticat
 | Technology | Purpose |
 |---|---|
 | React | UI development |
+| TypeScript | Type-safe frontend development |
 | Vite | Frontend build tool |
 | JavaScript | Frontend programming |
 | Axios / Fetch API | API communication |
@@ -201,6 +203,8 @@ npm run dev
 - Implemented JWT authentication and role-based permissions
 - Implemented filtering and access-control logic
 - Built a decoupled React frontend communicating with a Django REST API
+- Migrated selected React components, API services, and hooks from JavaScript to TypeScript
+- Added typed props, state, API responses, and reusable TypeScript interfaces
 - Integrated AI-powered task suggestions with debounce optimization
 - Containerized the backend using Docker
 - Created a local multi-container environment using Docker Compose
